@@ -8,7 +8,8 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 from sklearn.ensemble import (GradientBoostingClassifier,
                               RandomForestClassifier,
-                              VotingClassifier)
+                              VotingClassifier,
+                              StackingClassifier)
 
 from sklearn.metrics import (roc_auc_score,
                              accuracy_score,
@@ -104,7 +105,7 @@ def voting_classifier(t, true_x, mode='train'):
         nn = './models/mlp_clf_vad.pkl'
         grb = './models/grb_clf_vad.pkl'
         lr = pickle.load(open(lr, 'rb'))
-        rf = pickle.load(open(rf, 'rb'))
+        lgb = pickle.load(open(lgb, 'rb'))
         nn = pickle.load(open(nn, 'rb'))
         grb = pickle.load(open(grb, 'rb'))
         voting_clf = VotingClassifier(
@@ -121,6 +122,33 @@ def voting_classifier(t, true_x, mode='train'):
     voting_sm_pred = smoothing(voting_pred[:,1])
     voting_origin = pd.DataFrame(voting_pred[:,1]).reset_index(drop=True)
     return voting_sm_pred, voting_origin
+
+
+def stacking_classifier(t, true_x, mode='train'):
+    filename = './models/stacking_clf_vad.pkl'
+    if mode == 'train':
+        lr = './models/lr_clf_vad.pkl'
+        lgb = './models/lgb_clf_vad.pkl'
+        nn = './models/mlp_clf_vad.pkl'
+        grb = './models/grb_clf_vad.pkl'
+        lr = pickle.load(open(lr, 'rb'))
+        lgb = pickle.load(open(lgb, 'rb'))
+        nn = pickle.load(open(nn, 'rb'))
+        grb = pickle.load(open(grb, 'rb'))
+        stacking_clf = StackingClassifier(
+                        estimators = [('lr', lr), 
+                                      ('lgb', lgb), 
+                                      ('nn', nn), 
+                                      ('grb', grb)],
+                        final_estimator=LogisticRegression(random_state = 0, max_iter=500, solver='newton-cg'))
+        stacking_clf.fit(t[0].reset_index(drop=True), t[1].reset_index(drop=True))
+        pickle.dump(stacking_clf, open(filename, 'wb'))
+    else:
+        stacking_clf = pickle.load(open(filename, 'rb'))
+    stacking_pred = stacking_clf.final_estimator_.predict_proba(true_x)
+    stacking_sm_pred = smoothing(stacking_pred[:,1])
+    stacking_origin = pd.DataFrame(stacking_pred[:,1]).reset_index(drop=True)
+    return stacking_sm_pred, stacking_origin
 
 # AUC function definition
 def AUC(test, pred):
