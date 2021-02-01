@@ -145,7 +145,7 @@ def stacking_classifier(t, true_x, mode='train'):
         pickle.dump(stacking_clf, open(filename, 'wb'))
     else:
         stacking_clf = pickle.load(open(filename, 'rb'))
-    stacking_pred = stacking_clf.final_estimator_.predict_proba(true_x)
+    stacking_pred = stacking_clf.predict_proba(true_x)
     stacking_sm_pred = smoothing(stacking_pred[:,1])
     stacking_origin = pd.DataFrame(stacking_pred[:,1]).reset_index(drop=True)
     return stacking_sm_pred, stacking_origin
