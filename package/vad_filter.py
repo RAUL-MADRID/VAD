@@ -81,3 +81,21 @@ def feature_generation(df) :
                          "sd10", 'sd50', 'sd100', 'sd200', 'sd300',
                          'talking']]
     return final_df
+
+
+def feature_generation_sh(df) : 
+    df_sa = savitzky_golay(df)
+    df_saq = savitzky_golay_quadratic(df)
+    df_ma = moving_average(df)
+    df_sd = moving_standard(df)
+    df_ga = gaussian_fiter(df)
+    
+    final_df = pd.concat([df, df_ga, df_sa, df_saq, df_ma, df_sd], axis = 1)
+    final_df = final_df[['signal',
+                         "ga10", 'ga50', 'ga100', 'ga200', 'ga300',
+                         "sa10", 'sa50', 'sa100', 'sa200', 'sa300',
+                         "saq10", 'saq50', 'saq100', 'saq200', 'saq300',
+                         "ma10", 'ma50', 'ma100', 'ma200', 'ma300',
+                         "sd10", 'sd50', 'sd100', 'sd200', 'sd300',
+                         'talking']]
+    return final_df
