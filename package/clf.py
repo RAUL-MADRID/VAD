@@ -83,34 +83,33 @@ def LDA(t, true_x, mode='train') :
     return lda_sm_pred, lda_origin
 
 
-def lightGBM(t, true_x, mode='train') :
-    filename = './models/lgb_clf_vad.pkl'
-    if mode == 'train':
-        lgb_clf = LGBMClassifier()
-        lgb_clf.fit(t[0].reset_index(drop=True), t[1].reset_index(drop=True))
-        pickle.dump(lgb_clf, open(filename, 'wb'))
-    else:
-        lgb_clf = pickle.load(open(filename, 'rb'))
-    lgb_pred = lgb_clf.predict_proba(true_x)
-    lgb_sm_pred = smoothing(lgb_pred[:,1])
-    lgb_origin = pd.DataFrame(lgb_pred[:,1]).reset_index(drop=True)
-    return lgb_sm_pred, lgb_origin
+# def lightGBM(t, true_x, mode='train') :
+#     filename = './models/lgb_clf_vad.pkl'
+#     if mode == 'train':
+#         lgb_clf = LGBMClassifier()
+#         lgb_clf.fit(t[0].reset_index(drop=True), t[1].reset_index(drop=True))
+#         pickle.dump(lgb_clf, open(filename, 'wb'))
+#     else:
+#         lgb_clf = pickle.load(open(filename, 'rb'))
+#     lgb_pred = lgb_clf.predict_proba(true_x)
+#     lgb_sm_pred = smoothing(lgb_pred[:,1])
+#     lgb_origin = pd.DataFrame(lgb_pred[:,1]).reset_index(drop=True)
+#     return lgb_sm_pred, lgb_origin
 
 
 def voting_classifier(t, true_x, mode='train'):
     filename = './models/voting_clf_vad.pkl'
     if mode == 'train':
         lr = './models/lr_clf_vad.pkl'
-        lgb = './models/lgb_clf_vad.pkl'
+        #lgb = './models/lgb_clf_vad.pkl'
         nn = './models/mlp_clf_vad.pkl'
         grb = './models/grb_clf_vad.pkl'
         lr = pickle.load(open(lr, 'rb'))
-        lgb = pickle.load(open(lgb, 'rb'))
+        #lgb = pickle.load(open(lgb, 'rb'))
         nn = pickle.load(open(nn, 'rb'))
         grb = pickle.load(open(grb, 'rb'))
         voting_clf = VotingClassifier(
-                        estimators = [('lr', lr), 
-                                      ('lgb', lgb), 
+                        estimators = [('lr', lr),  
                                       ('nn', nn), 
                                       ('grb', grb)],
                         voting = 'soft')
@@ -128,16 +127,15 @@ def stacking_classifier(t, true_x, mode='train'):
     filename = './models/stacking_clf_vad.pkl'
     if mode == 'train':
         lr = './models/lr_clf_vad.pkl'
-        lgb = './models/lgb_clf_vad.pkl'
+        #lgb = './models/lgb_clf_vad.pkl'
         nn = './models/mlp_clf_vad.pkl'
         grb = './models/grb_clf_vad.pkl'
         lr = pickle.load(open(lr, 'rb'))
-        lgb = pickle.load(open(lgb, 'rb'))
+        #lgb = pickle.load(open(lgb, 'rb'))
         nn = pickle.load(open(nn, 'rb'))
         grb = pickle.load(open(grb, 'rb'))
         stacking_clf = StackingClassifier(
                         estimators = [('lr', lr), 
-                                      ('lgb', lgb), 
                                       ('nn', nn), 
                                       ('grb', grb)],
                         final_estimator=LogisticRegression(random_state = 0, max_iter=500, solver='newton-cg'))
